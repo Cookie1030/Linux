@@ -1,0 +1,26 @@
+------------------------1---------------
+virsh list --all
+virsh destroy www
+virsh domblklist www
+virsh dumpxml www > /root/www.xml
+cp www.xml /mnt/lost+found/
+cp /home/kvm/www.qcow2 /mnt/lost+found/
+
+
+-------------------------2-------------------
+cp /mnt/lost+found/www.xml /etc/libvirt/qemu/
+cp /mnt/lost+found/www.qcow2 /var/lib/libvirt/images/
+chmod 644 /var/lib/libvirt/images/www.qcow2
+virsh define /etc/libvirt/qemu/www.xml    //www.xml---edit
+virsh start www
+
+
+
+
+------------------------VNC Viewer------------------------------------
+192.168.x.xxx:5910
+vi /etc/sysconfig/network-scripts/ifcfg-eht0
+vi /etc/sysconfig/network
+/etc/init.d/network restart
+ifconfig
+reboot
