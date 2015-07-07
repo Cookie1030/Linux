@@ -1,0 +1,9 @@
+df -h
+fdisk -l
+fdisk /dev/sdc (n-p-1-enter-enter-wq)
+fdisk -l
+mkfs.ext3 /dev/sdc1
+echo '/dev/sdc1 /mnt ext3 defaults 0 0' >> /etc/fstab
+cat /etc/fstab
+mount -a
+df -h
