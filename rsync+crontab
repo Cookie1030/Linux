@@ -1,0 +1,123 @@
+infoadmin→info
+
+info：192.168.4.84
+
+infoadmin：192.168.4.83
+
+[root@info ~]# vi /etc/selinux/config
+
+   #SELINUX=enforcing
+
+   #SELINUXTYPE=targeted
+
+   SELINUX=disabled
+
+[root@info ~]# setenforce 0 
+
+[root@info ~]# vi /etc/sysconfig/iptables
+
+  -A INPUT -m state --state NEW -m tcp -p --dport 873 -j ACCEPT
+
+[root@info ~]# /etc/init.d/iptables restart
+
+[root@info ~]# yum install rsync xinetd
+
+[root@info ~]# vi /etc/xinetd.d/rsync
+
+   disable = no
+
+[root@info ~]# /etc/init.d/xinetd start
+
+[root@info ~]# vi /etc/rsyncd.conf
+
+    log file = /var/log/rsyncd.log
+    pidfile = /var/run/rsyncd.pid
+    lock file = /var/run/rsync.lock
+    secrets file = /etc/rsync.pass
+    motd file = /etc/rsyncd.Motd
+    [home_www.cookie.com]
+    path = /home/www.cookie.com/
+    comment = home_www.coookie.com
+    uid = root
+    gid = root
+    port = 873
+    use chroot = no
+    read only = no
+    list = no
+    max connections = 200
+    timeout = 600
+    auth users = home_www.cookie.com_user
+    host allow = 192.168.4.83
+    host deny = 192.168.4.254
+
+[root@info ~]# vi /etc/rsync.pass
+
+    home_www.cookie.com_user:123456
+
+[root@info ~]# chmod 600 /etc/rsyncd.conf  
+
+[root@info ~]# chmod 600 /etc/rsync.pass 
+
+[root@info ~]# /etc/init.d/xinetd start
+
+[root@info ~]# service xinetd stop
+
+[root@info ~]# service xinetd restart
+
+
+
+root@infoadmin ~]# vi /etc/selinux/config
+
+   #SELINUX=enforcing
+
+   #SELINUXTYPE=targeted
+
+   SELINUX=disabled
+
+[root@infoadmin ~]# setenforce 0
+
+[root@infoadmin ~]# vi /etc/sysconfig/iptables
+
+  -A INPUT -m state --state NEW -m tcp -p --dport 873 -j ACCEPT
+
+[root@infoadmin ~]# /etc/init.d/iptables restart
+
+[root@infoadmin ~]# yum install rsync xinetd
+
+[root@infoadmin ~]# vi /etc/xinetd.d/rsync
+
+   disable = no
+
+[root@infoadmin ~]# /etc/init.d/xinetd start
+
+[root@infoadmin ~]# vi /etc/passwd.txt 
+
+   123456
+
+[root@infoadmin ~]# chmod 600 /etc/passwd.txt
+
+[root@info ~]# cd /home/ 
+
+[root@info home]# mkdir www.cookie.com
+
+
+
+[root@infoadmin ~]# mkdir -p /home/www.cookie.com/test
+
+[root@infoadmin ~]# rsync -avH --port=873 --progress --delete  /home/www.cookie.com/  home_www.cookie.com_user@192.168.3.55::home_www.cookie.com --password-file=/etc/passwd.txt
+
+
+
+[root@infoadmin ~]# vi /tmp/rsyncd.sh
+
+    #!/bin/bash
+
+rsync -avH --port=873 --progress --delete  /home/www.cookie.com/home_www.cookie.com_user@192.168.4.84::home_www.cookie.com --password-file=/etc/passwd.txt
+
+[root@infoadmin ~]# crontab -e
+
+    */1 * * * * sh /tmp/rsyncd.sh
+
+
+
+**************over***********************
