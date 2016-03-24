@@ -1,0 +1,12 @@
+yum install -y postgresql-devel
+cd /usr/local/src/
+rm -rf php-5.5.15                              ------有时直接安装会有问题，可删掉php后重新安装
+tar -jxvf php-5.5.15.tar.bz2 
+cd /usr/local/src/php-5.5.15/ext/pdo_pgsql/     -----进入php下的pdo_pgsql页面
+/srv/php/bin/phpize    
+./configure --with-php-config=/srv/php/bin/php-config 
+make
+make install
+cd /srv/php/etc/conf.d/
+vim pdo_pgsql.ini           (extension=pdo_pgsql.so)
+/etc/init.d/php-fpm restart
