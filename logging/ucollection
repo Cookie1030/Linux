@@ -1,0 +1,108 @@
+#!/bin/bash
+##############################################
+# $Author: netkiller $
+# $Id$
+# http://netkiller.github.io
+##############################################
+# chkconfig: 345 99 01
+# description: log collection
+# processname: collection
+# File : collection
+##############################################
+BASEDIR='/srv/logging'
+PROG=$BASEDIR/bin/collection
+NAME=$(basename $PROG)
+LOGFILE=/var/tmp/$NAME.log
+PIDFILE=/var/tmp/$NAME.pid
+##############################################
+#echo $$
+#echo $BASHPID
+LOGDIR=/opt/logs
+##############################################
+DEBUG='Y'
+##############################################
+
+function run(){
+
+	while read port log
+	do
+		if [ $DEBUG == 'Y' ]; then
+			echo $port $log
+		fi
+		dirpath=$(dirname $log)
+		if [ ! -d $dirpath ]; then
+			mkdir -p $dirpath
+		fi
+		${PROG} -d -p $port -l $log
+	done << EOF
+3100 /opt/logs/admin31/nginx/error.log
+3101 /opt/logs/admin31/nginx/access.log
+3102 /opt/logs/admin31/php_errors.log
+3103 /opt/logs/admin31/log.hx9999.com/login.log
+3104 /opt/logs/admin31/log.hx9999.com/mysql_error.log
+3105 /opt/logs/admin31/log.hx9999.com/silver.log
+3106 /opt/logs/admin31/log.hx9999.com/report.log
+3107 /opt/logs/admin31/log.hx9999.com/sendApi.log
+3108 /opt/logs/admin31/log.hx9999.com/bounty_members.log
+3109 /opt/logs/admin31/log.hx9999.com/depositTime.task.log
+3110 /opt/logs/admin31/log.hx9999.com/withdrawing.task.log
+3111 /opt/logs/admin31/log.hx9999.com/activity.task.log
+3112 /opt/logs/admin31/log.hx9999.com/report.task.log
+3113 /opt/logs/admin31/log.hx9999.com/replenishment.log
+3114 /opt/logs/admin31/log.hx9999.com/php_errors.log
+EOF
+
+	#for log in ${LOG}
+	#do
+	#	${RLOG} $log
+	#	echo $! > $PIDFILE
+	#done
+}
+
+function compress(){
+	# $(date -d "yesterday" +"%Y-%m-%d.%H:%M:%S")
+	for zlog in $(ls -1 ${LOGDIR}/*.$(date -d "yesterday" +"%Y-%m-%d").log)
+	do
+		if [ -f $zlog ]; then
+			gzip $zlog &
+		fi
+	done
+}
+
+function start(){
+	if [ -f "$PIDFILE" ]; then
+		echo $PIDFILE
+		exit 2
+	fi
+	run
+	compress
+	#for (( ; ; ))
+	#do
+	#done &
+}
+function stop(){
+  	#[ -f $PIDFILE ] && kill `cat $PIDFILE` && rm -rf $PIDFILE
+	pkill -x ${NAME}
+	[ -f $PIDFILE ] && rm -rf $PIDFILE
+}
+
+case "$1" in
+  start)
+  	start
+	;;
+  stop)
+  	stop
+	;;
+  status)
+  	ps ax | grep ${NAME} | grep -v grep | grep -v status
+	;;
+  restart)
+  	stop
+	start
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|status|restart}"
+	exit 2
+esac
+
+exit $?
