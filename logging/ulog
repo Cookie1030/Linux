@@ -1,0 +1,104 @@
+#!/bin/bash
+##############################################
+# $Author: netkiller $
+# $Id$
+# http://netkiller.github.io
+##############################################
+BASEDIR='/srv/logging'
+PROG=$BASEDIR/bin/$(basename $0)
+NAME=$(basename $PROG)
+LOGFILE=/var/tmp/$NAME.log
+PIDFILE=/var/tmp/$NAME.pid
+##############################################
+HOST=172.18.53.102
+PORT=
+LOG=""
+LOGDIR=/www/hx9999.com/log.hx9999.com
+##############################################
+#RLOG="/usr/local/bin/rlog -d -H ${HOST} -p ${PORT} "
+RLOG="/srv/logging/bin/rlog"
+DEBUG='N'
+##############################################
+#echo $$
+#echo $BASHPID
+
+function run(){
+	while read port log
+	do
+		if [ $DEBUG == 'Y' ]; then
+			echo $port $log
+		fi
+		
+		if [ -f $log ]; then
+			${RLOG} -d --postion -H ${HOST} -p $port $log
+		else
+			${RLOG} -d -f --postion -H ${HOST} -p $port $log
+		fi
+	done << EOF
+3100 /var/log/nginx/error.log
+3101 /var/log/nginx/access.log
+3102 /tmp/php_errors.log
+3103 /www/hx9999.com/log.hx9999.com/login/$(date +"%Y-%m-%d").log
+3104 /www/hx9999.com/log.hx9999.com/mysql_error/$(date +"%Y-%m-%d").log
+3105 /www/hx9999.com/log.hx9999.com/silver/$(date +"%Y-%m-%d").silver.log
+3106 /www/hx9999.com/log.hx9999.com/report.$(date +"%Y-%m-%d").log
+3107 /www/hx9999.com/log.hx9999.com/sendApi.$(date +"%Y-%m-%d").log
+3108 /www/hx9999.com/log.hx9999.com/bounty_members.$(date +"%Y-%m-%d").log
+3109 /www/hx9999.com/log.hx9999.com/depositTime.task.$(date +"%Y-%m-%d").log
+3110 /www/hx9999.com/log.hx9999.com/withdrawing.task.$(date +"%Y-%m-%d").log
+3111 /www/hx9999.com/log.hx9999.com/activity.task.$(date +"%Y-%m-%d").log
+3112 /www/hx9999.com/log.hx9999.com/report.task.$(date +"%Y-%m-%d").log
+3113 /www/hx9999.com/log.hx9999.com/replenishment_$(date +"%Y-%m-%d").log
+3114 /www/hx9999.com/log.hx9999.com/php_errors.log
+EOF
+
+}
+
+function compress(){
+	# $(date -d "yesterday" +"%Y-%m-%d.%H:%M:%S")
+	for zlog in $(ls -1 ${LOGDIR}/*.$(date -d "yesterday" +"%Y-%m-%d").log)
+	do
+		if [ -f $zlog ]; then
+			gzip $zlog &
+		fi
+	done
+}
+
+function start(){
+	if [ -f "$PIDFILE" ]; then
+		echo $PIDFILE
+		exit 2
+	fi
+	run
+	compress
+	
+	#for (( ; ; ))
+	#do
+	#done &
+}
+function stop(){
+  	#[ -f $PIDFILE ] && kill `cat $PIDFILE` && rm -rf $PIDFILE
+	pkill -x rlog
+	[ -f $PIDFILE ] && rm -rf $PIDFILE
+}
+
+case "$1" in
+  start)
+  	start
+	;;
+  stop)
+  	stop
+	;;
+  status)
+  	ps ax | grep rlog | grep -v grep | grep -v status
+	;;
+  restart)
+  	stop
+	start
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|status|restart}"
+	exit 2
+esac
+
+exit $?
