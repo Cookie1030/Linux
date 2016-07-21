@@ -1,0 +1,9 @@
+cd /usr/local/src/php-5.5.16/ext/ftp/
+/srv/php-5.5.16/bin/phpize
+./configure --with-php-config=/srv/php-5.5.16/bin/php-config
+make
+make install
+vim /srv/php-5.5.16/etc/php.ini
+   extension_dir = "/srv/php-5.5.16/lib/php/extensions/no-debug-zts-20121212/"
+   extension=ftp.so
+/etc/init.d/php-fpm restart
