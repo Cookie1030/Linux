@@ -1,0 +1,12 @@
+
+cd /srv/php-7.2.8/ext/mysqli/
+/opt/local/php7/bin/phpize
+./configure --with-php-config=/opt/local/php7/bin/php-config
+make && make install
+
+vim /opt/local/php7/etc/php.ini
+ extension=mysqli.so
+ 
+/etc/init.d/php-fpm restart
+
+php-m | grep mysqli
