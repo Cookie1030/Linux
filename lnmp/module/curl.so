@@ -1,3 +1,4 @@
+
 cd /srv/php-7.2.8/ext/curl
 /opt/local/php7/bin/phpize
 ./configure --with-php-config=/opt/local/php7/bin/php-config
